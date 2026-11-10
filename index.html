@@ -102,6 +102,7 @@
     label span { color: var(--muted); font-weight: 400; }
 
     input[type="text"],
+    input[type="url"],
     textarea {
       display: block;
       width: 100%;
@@ -115,37 +116,12 @@
 
     textarea { min-height: 240px; resize: vertical; }
 
-    input[type="file"] {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      background: var(--field);
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-      font: inherit;
-      font-size: 0.9rem;
-    }
-
-    input[type="file"]::file-selector-button {
-      margin-right: 12px;
-      padding: 8px 14px;
-      background: #1e293b;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font: inherit;
-      cursor: pointer;
-    }
-
     .hint { margin: 8px 0 0; color: var(--muted); font-size: 0.82rem; }
-    .field-error { margin: 8px 0 0; color: var(--err); font-size: 0.88rem; }
-    .field-error[hidden] { display: none; }
 
     ::placeholder { color: #64748b; opacity: 1; }
 
     input[type="text"]:focus-visible,
-    input[type="file"]:focus-visible,
+    input[type="url"]:focus-visible,
     textarea:focus-visible,
     button:focus-visible {
       outline: 2px solid var(--accent-hover);
@@ -230,11 +206,10 @@
         </div>
 
         <div class="field">
-          <label for="attachment">Atașează dovadă (opțional): Foto, Document, Audio sau Video scurt</label>
-          <input type="file" name="attachment" id="attachment" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" aria-describedby="attachment-hint attachment-error">
-          <p id="attachment-hint" class="hint">Fișierele sunt limitate la maximum 5 MB (filmări de câteva secunde, capturi foto sau documente). Pentru filmări mai lungi, comprimați fișierul sau trimiteți-l decupat pe porțiunea relevantă.</p>
+          <label for="link_dovezi">Link către fișiere/dovezi (opțional):</label>
+          <input type="url" id="link_dovezi" name="link_dovezi" autocomplete="off" aria-describedby="link-hint" placeholder="https://wormhole.app/... sau alt link de transfer">
+          <p id="link-hint" class="hint">Pentru filmări video, fișiere audio sau pachete mari de documente: încărcați fișierul gratuit și anonim pe un serviciu de transfer fără cont (ex. wormhole.app sau send.vis.ee) și lipiți linkul generat aici.</p>
           <p class="hint">Sfat confidențialitate: Fotografiile făcute direct cu camera telefonului pot conține coordonate GPS sau modelul aparatului (date EXIF). Pentru anonimat deplin, puteți trimite o captură de ecran (screenshot) a pozei sau a documentului.</p>
-          <p id="attachment-error" class="field-error" role="alert" hidden></p>
         </div>
 
         <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" aria-hidden="true">
@@ -253,20 +228,6 @@
     const form = document.getElementById('form');
     const button = document.getElementById('submit');
     const statusBox = document.getElementById('status');
-    const attachment = document.getElementById('attachment');
-    const attachmentError = document.getElementById('attachment-error');
-    const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
-    attachment.addEventListener('change', () => {
-      const file = attachment.files[0];
-      if (file && file.size > MAX_FILE_SIZE) {
-        attachment.value = '';
-        attachmentError.textContent = 'Fișierul depășește limita de 5 MB. Vă rugăm să selectați o filmare mai scurtă sau o imagine comprimată.';
-        attachmentError.hidden = false;
-      } else {
-        attachmentError.hidden = true;
-      }
-    });
 
     function showStatus(type, text) {
       statusBox.className = 'status ' + type;
@@ -284,13 +245,20 @@
         return;
       }
 
+      const link = form.link_dovezi.value.trim();
+      if (link && !form.link_dovezi.checkValidity()) {
+        showStatus('err', 'Linkul către dovezi nu pare valid. Trebuie să înceapă cu https://');
+        form.link_dovezi.focus();
+        return;
+      }
+
       const payload = new FormData();
       payload.append('access_key', WEB3FORMS_ACCESS_KEY);
       payload.append('subject', form.subject.value.trim() || 'Sesizare anonimă');
       payload.append('from_name', 'Cutie Anonimă de Sesizări');
       payload.append('message', message);
       if (form.botcheck.checked) payload.append('botcheck', 'true');
-      if (attachment.files[0]) payload.append('attachment', attachment.files[0]);
+      if (link) payload.append('link_dovezi', link);
 
       button.disabled = true;
       button.textContent = 'Se trimite...';
