@@ -103,6 +103,7 @@
 
     input[type="text"],
     input[type="url"],
+    input[type="number"],
     textarea {
       display: block;
       width: 100%;
@@ -122,14 +123,14 @@
 
     input[type="text"]:focus-visible,
     input[type="url"]:focus-visible,
+    input[type="number"]:focus-visible,
     textarea:focus-visible,
     button:focus-visible {
       outline: 2px solid var(--accent-hover);
       outline-offset: 2px;
     }
 
-    /* Honeypot Web3Forms: invizibil pentru oameni, completat doar de boți. */
-    .botcheck { display: none; }
+    input[type="number"] { max-width: 140px; }
 
     button {
       width: 100%;
@@ -212,7 +213,13 @@
           <p class="hint">Sfat confidențialitate: Fotografiile făcute direct cu camera telefonului pot conține coordonate GPS sau modelul aparatului (date EXIF). Pentru anonimat deplin, puteți trimite o captură de ecran (screenshot) a pozei sau a documentului.</p>
         </div>
 
-        <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" aria-hidden="true">
+        <div class="field">
+          <label for="captcha" id="captcha-label">Verificare anti-spam</label>
+          <input type="number" id="captcha" required inputmode="numeric" autocomplete="off">
+        </div>
+
+        <!-- Honeypot Web3Forms: invizibil pentru oameni, completat doar de boți. -->
+        <input type="checkbox" name="botcheck" class="hidden" style="display: none;" tabindex="-1" aria-hidden="true">
 
         <button type="submit" id="submit">Trimite anonim</button>
         <p id="status" class="status" role="status" aria-live="polite" hidden></p>
@@ -235,6 +242,21 @@
       statusBox.hidden = false;
     }
 
+    const captcha = document.getElementById('captcha');
+    const captchaLabel = document.getElementById('captcha-label');
+    const COOLDOWN_MS = 15000;
+    let captchaSum = 0;
+
+    function newChallenge() {
+      const x = Math.floor(Math.random() * 9) + 1;
+      const y = Math.floor(Math.random() * 9) + 1;
+      captchaSum = x + y;
+      captchaLabel.textContent = 'Verificare anti-spam: Cât fac ' + x + ' + ' + y + '?';
+      captcha.value = '';
+    }
+
+    newChallenge();
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
 
@@ -252,6 +274,13 @@
         return;
       }
 
+      if (captcha.value.trim() === '' || Number(captcha.value) !== captchaSum) {
+        showStatus('err', 'Răspuns incorect la verificarea anti-spam.');
+        newChallenge();
+        captcha.focus();
+        return;
+      }
+
       const payload = new FormData();
       payload.append('access_key', WEB3FORMS_ACCESS_KEY);
       payload.append('subject', form.subject.value.trim() || 'Sesizare anonimă');
@@ -260,6 +289,7 @@
       if (form.botcheck.checked) payload.append('botcheck', 'true');
       if (link) payload.append('link_dovezi', link);
 
+      let sent = false;
       button.disabled = true;
       button.textContent = 'Se trimite...';
       statusBox.hidden = true;
@@ -273,13 +303,24 @@
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.message);
 
+        sent = true;
         form.reset();
+        newChallenge();
         showStatus('ok', 'Mesaj trimis anonim');
       } catch (error) {
         showStatus('err', 'Mesajul nu a putut fi trimis. Verifică conexiunea la internet și încearcă din nou. Textul tău a rămas în formular.');
       } finally {
-        button.disabled = false;
-        button.textContent = 'Trimite anonim';
+        if (sent) {
+          // Pauză după o trimitere reușită, împotriva trimiterilor în rafală.
+          button.textContent = 'Așteptați...';
+          setTimeout(() => {
+            button.disabled = false;
+            button.textContent = 'Trimite anonim';
+          }, COOLDOWN_MS);
+        } else {
+          button.disabled = false;
+          button.textContent = 'Trimite anonim';
+        }
       }
     });
   </script>
