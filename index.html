@@ -6,7 +6,12 @@
   <meta name="referrer" content="no-referrer">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0b1220">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.web3forms.com; img-src 'self' data:;">
   <meta name="description" content="Cutie anonimă de sesizări civice. Fără cont, fără date personale.">
+  <meta property="og:title" content="Cutie Anonimă de Sesizări Civice">
+  <meta property="og:description" content="Trimite sesizări, dovezi sau informații în siguranță și confidențialitate deplină, fără cont sau date personale.">
+  <meta property="og:url" content="https://catalinchirazic7-web.github.io/sesizari-anonime/">
+  <meta property="og:type" content="website">
   <title>Cutie Anonimă de Sesizări Civice</title>
   <link rel="icon" href="data:,">
   <style>
@@ -43,8 +48,41 @@
       width: 100%;
       max-width: 680px;
       margin: 0 auto;
-      padding: 48px 16px 40px;
+      padding: 68px 16px 40px;
     }
+
+    .panic {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 10;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: var(--surface);
+      border: 1px solid var(--err-border);
+      border-radius: 8px;
+      color: var(--err);
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .panic:hover { background: var(--err-bg); }
+
+    details.about {
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.93rem;
+    }
+
+    details.about summary { cursor: pointer; font-weight: 600; }
+    details.about p { margin: 10px 0 2px; color: var(--muted); }
 
     header { margin-bottom: 24px; }
 
@@ -104,6 +142,7 @@
     input[type="text"],
     input[type="url"],
     input[type="number"],
+    select,
     textarea {
       display: block;
       width: 100%;
@@ -124,6 +163,8 @@
     input[type="text"]:focus-visible,
     input[type="url"]:focus-visible,
     input[type="number"]:focus-visible,
+    select:focus-visible,
+    summary:focus-visible,
     textarea:focus-visible,
     button:focus-visible {
       outline: 2px solid var(--accent-hover);
@@ -132,7 +173,7 @@
 
     input[type="number"] { max-width: 140px; }
 
-    button {
+    #submit {
       width: 100%;
       padding: 13px 20px;
       background: var(--accent);
@@ -145,8 +186,18 @@
       transition: background-color 0.15s;
     }
 
-    button:hover { background: #2563eb; }
-    button:disabled { background: #334155; color: var(--muted); cursor: not-allowed; }
+    #submit:hover { background: #2563eb; }
+    #submit:disabled { background: #334155; color: var(--muted); cursor: not-allowed; }
+
+    .ref-code {
+      display: block;
+      margin: 8px 0;
+      color: #fff;
+      font-family: ui-monospace, Consolas, "Courier New", monospace;
+      font-size: 1.7rem;
+      letter-spacing: 0.08em;
+      user-select: all;
+    }
 
     .status {
       margin: 16px 0 0;
@@ -170,17 +221,31 @@
     @media (min-width: 640px) {
       main { padding-top: 72px; }
       .card { padding: 32px; }
-      button { width: auto; min-width: 220px; }
+      #submit { width: auto; min-width: 220px; }
     }
   </style>
 </head>
 <body>
+  <button type="button" id="panic" class="panic" title="Golește formularul și părăsește imediat pagina">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <path d="M16 17l5-5-5-5"/>
+      <path d="M21 12H9"/>
+    </svg>
+    Ieșire rapidă (Panică)
+  </button>
+
   <main>
     <header>
       <p class="eyebrow">Sesizări civice</p>
       <h1>Cutie Anonimă de Sesizări</h1>
       <p class="lead">Semnalează o neregulă, un abuz sau o problemă de interes public. Scrie doar faptele.</p>
     </header>
+
+    <details class="about">
+      <summary>Cine citește sesizarea și ce se întâmplă cu ea?</summary>
+      <p>Mesajele sunt recepționate exclusiv de administratorul paginii civice locale. Informațiile primite sunt analizate cu maximă discreție, verificate în documente oficiale și hotărâri publice, iar neregulile confirmate sunt sesizate către instituțiile abilitate (Prefectură, Curtea de Conturi, instanțe judecătorești sau autorități de control) sau aduse la cunoștința comunității, fără a divulga vreodată sursa pontului.</p>
+    </details>
 
     <div class="card">
       <div class="privacy">
@@ -199,6 +264,19 @@
         <div class="field">
           <label for="subject">Subiect / Temă <span>(opțional)</span></label>
           <input type="text" id="subject" name="subject" maxlength="150" autocomplete="off" placeholder="Ex.: Lucrări publice, achiziții, mediu">
+        </div>
+
+        <div class="field">
+          <label for="categorie">Categorie <span>(opțional)</span></label>
+          <select id="categorie" name="categorie">
+            <option value="">Alege o categorie</option>
+            <option>Achiziții publice &amp; licitații</option>
+            <option>Câini fără stăpân &amp; protecția animalelor</option>
+            <option>Infrastructură, apă &amp; drumuri</option>
+            <option>Domeniul public &amp; patrimoniu</option>
+            <option>Taxe, bugete &amp; cheltuieli</option>
+            <option>Altele / Informații generale</option>
+          </select>
         </div>
 
         <div class="field">
@@ -257,6 +335,43 @@
 
     newChallenge();
 
+    // Cod de referință SZ-XXXXX, fără caractere ușor de confundat (0/O, 1/I).
+    function newReferenceCode() {
+      const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      const bytes = crypto.getRandomValues(new Uint8Array(5));
+      return 'SZ-' + Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('');
+    }
+
+    function showSuccess(code) {
+      const codeBox = document.createElement('strong');
+      codeBox.className = 'ref-code';
+      codeBox.textContent = code;
+      statusBox.className = 'status ok';
+      statusBox.replaceChildren(
+        'Sesizarea a fost transmisă anonim! Codul tău de referință: ',
+        codeBox,
+        ' Păstrează-l dacă dorești să revii ulterior cu completări sau dovezi noi pentru acest caz.'
+      );
+      statusBox.hidden = false;
+    }
+
+    let submitting = false;
+    let leaving = false;
+
+    window.onbeforeunload = (event) => {
+      if (leaving || submitting || form.message.value.trim().length <= 10) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    document.getElementById('panic').addEventListener('click', () => {
+      leaving = true;
+      form.reset();
+      form.message.value = '';
+      statusBox.hidden = true;
+      window.location.replace('https://www.google.ro');
+    });
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
 
@@ -283,13 +398,17 @@
 
       const payload = new FormData();
       payload.append('access_key', WEB3FORMS_ACCESS_KEY);
-      payload.append('subject', form.subject.value.trim() || 'Sesizare anonimă');
+      const code = newReferenceCode();
+      payload.append('subject', '[' + code + '] ' + (form.subject.value.trim() || 'Sesizare anonimă'));
       payload.append('from_name', 'Cutie Anonimă de Sesizări');
+      payload.append('cod_referinta', code);
+      if (form.categorie.value) payload.append('categorie', form.categorie.value);
       payload.append('message', message);
       if (form.botcheck.checked) payload.append('botcheck', 'true');
       if (link) payload.append('link_dovezi', link);
 
       let sent = false;
+      submitting = true;
       button.disabled = true;
       button.textContent = 'Se trimite...';
       statusBox.hidden = true;
@@ -306,10 +425,11 @@
         sent = true;
         form.reset();
         newChallenge();
-        showStatus('ok', 'Mesaj trimis anonim');
+        showSuccess(code);
       } catch (error) {
         showStatus('err', 'Mesajul nu a putut fi trimis. Verifică conexiunea la internet și încearcă din nou. Textul tău a rămas în formular.');
       } finally {
+        submitting = false;
         if (sent) {
           // Pauză după o trimitere reușită, împotriva trimiterilor în rafală.
           button.textContent = 'Așteptați...';
