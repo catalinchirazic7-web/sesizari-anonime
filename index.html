@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="Cutie anonimă de sesizări civice. Fără cont, fără date personale.">
+  <title>Cutie Anonimă de Sesizări Civice</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #111a2e;
+      --field: #0d1526;
+      --border: #26334d;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #60a5fa;
+      --ok: #4ade80;
+      --ok-bg: #0f2a1e;
+      --ok-border: #1f5a3c;
+      --err: #fca5a5;
+      --err-bg: #2c1318;
+      --err-border: #7f1d1d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    main {
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 48px 16px 40px;
+    }
+
+    header { margin-bottom: 24px; }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .lead { margin: 0; color: var(--muted); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .privacy {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 14px 16px;
+      background: var(--field);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      font-size: 0.93rem;
+    }
+
+    .privacy svg { flex: none; margin-top: 2px; color: var(--accent-hover); }
+    .privacy strong { display: block; margin-bottom: 4px; }
+    .privacy p { margin: 0; color: var(--muted); }
+    .privacy small { display: block; margin-top: 8px; color: var(--muted); font-size: 0.82rem; }
+
+    .field { margin-bottom: 20px; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.93rem;
+      font-weight: 600;
+    }
+
+    label span { color: var(--muted); font-weight: 400; }
+
+    input[type="text"],
+    textarea {
+      display: block;
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--field);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font: inherit;
+    }
+
+    textarea { min-height: 240px; resize: vertical; }
+
+    ::placeholder { color: #64748b; opacity: 1; }
+
+    input[type="text"]:focus-visible,
+    textarea:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--accent-hover);
+      outline-offset: 2px;
+    }
+
+    /* Honeypot Web3Forms: invizibil pentru oameni, completat doar de boți. */
+    .botcheck { display: none; }
+
+    button {
+      width: 100%;
+      padding: 13px 20px;
+      background: var(--accent);
+      border: 0;
+      border-radius: 8px;
+      color: #fff;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+
+    button:hover { background: #2563eb; }
+    button:disabled { background: #334155; color: var(--muted); cursor: not-allowed; }
+
+    .status {
+      margin: 16px 0 0;
+      padding: 12px 14px;
+      border: 1px solid;
+      border-radius: 8px;
+      font-size: 0.93rem;
+    }
+
+    .status[hidden] { display: none; }
+    .status.ok { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok); }
+    .status.err { background: var(--err-bg); border-color: var(--err-border); color: var(--err); }
+
+    footer {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-align: center;
+    }
+
+    @media (min-width: 640px) {
+      main { padding-top: 72px; }
+      .card { padding: 32px; }
+      button { width: auto; min-width: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Sesizări civice</p>
+      <h1>Cutie Anonimă de Sesizări</h1>
+      <p class="lead">Semnalează o neregulă, un abuz sau o problemă de interes public. Scrie doar faptele.</p>
+    </header>
+
+    <div class="card">
+      <div class="privacy">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3l8 3v6c0 4.5-3.2 8.2-8 9-4.8-.8-8-4.5-8-9V6l8-3z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+        <div>
+          <strong>Trimiți anonim.</strong>
+          <p>Formularul nu solicită nume, cont sau date de contact.</p>
+          <small>Pentru a-ți ascunde adresa IP, poți trimite mesajul printr-o conexiune VPN sau Tor.</small>
+        </div>
+      </div>
+
+      <form id="form" novalidate>
+        <div class="field">
+          <label for="subject">Subiect / Temă <span>(opțional)</span></label>
+          <input type="text" id="subject" name="subject" maxlength="150" autocomplete="off" placeholder="Ex.: Lucrări publice, achiziții, mediu">
+        </div>
+
+        <div class="field">
+          <label for="message">Sesizarea ta</label>
+          <textarea id="message" name="message" required autocomplete="off" placeholder="Descrie faptele: ce s-a întâmplat, unde, când, cine este implicat. Poți lipi aici și textul unui document."></textarea>
+        </div>
+
+        <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" aria-hidden="true">
+
+        <button type="submit" id="submit">Trimite anonim</button>
+        <p id="status" class="status" role="status" aria-live="polite" hidden></p>
+      </form>
+    </div>
+
+    <footer>Fără cont · Fără date personale · Fără cookie-uri</footer>
+  </main>
+
+  <script>
+    const WEB3FORMS_ACCESS_KEY = 'e745d373-c51b-46c5-b8e6-a718e5ad4cd4';
+
+    const form = document.getElementById('form');
+    const button = document.getElementById('submit');
+    const statusBox = document.getElementById('status');
+
+    function showStatus(type, text) {
+      statusBox.className = 'status ' + type;
+      statusBox.textContent = text;
+      statusBox.hidden = false;
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const message = form.message.value.trim();
+      if (!message) {
+        showStatus('err', 'Scrie textul sesizării înainte de a trimite.');
+        form.message.focus();
+        return;
+      }
+
+      const payload = {
+        access_key: WEB3FORMS_ACCESS_KEY,
+        subject: form.subject.value.trim() || 'Sesizare anonimă',
+        from_name: 'Cutie Anonimă de Sesizări',
+        message: message
+      };
+      if (form.botcheck.checked) payload.botcheck = true;
+
+      button.disabled = true;
+      button.textContent = 'Se trimite...';
+      statusBox.hidden = true;
+
+      try {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload),
+          referrerPolicy: 'no-referrer'
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message);
+
+        form.reset();
+        showStatus('ok', 'Mesaj trimis anonim');
+      } catch (error) {
+        showStatus('err', 'Mesajul nu a putut fi trimis. Verifică conexiunea la internet și încearcă din nou. Textul tău a rămas în formular.');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Trimite anonim';
+      }
+    });
+  </script>
+</body>
+</html>
